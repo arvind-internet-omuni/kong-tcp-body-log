@@ -20,15 +20,13 @@ function TCPBodyLogHandler:access(conf)
   local req_body, res_body = "", ""
   local req_post_args = {}
 
-  if true then
-    req_read_body()
-    req_body = req_get_body_data()
+  req_read_body()
+  req_body = req_get_body_data()
 
-    local headers = req_get_headers()
-    local content_type = headers["content-type"]
-    if content_type and string_find(content_type:lower(), "application/x-www-form-urlencoded", nil, true) then
-      req_post_args = public_utils.get_body_args()
-    end
+  local headers = req_get_headers()
+  local content_type = headers["content-type"]
+  if content_type and string_find(content_type:lower(), "application/x-www-form-urlencoded", nil, true) then
+    req_post_args = public_utils.get_body_args()
   end
 
   -- keep in memory the bodies for this request
@@ -41,18 +39,17 @@ end
 
 function TCPBodyLogHandler:body_filter(conf)
  TCPBodyLogHandler.super.body_filter(self)
- 
-  if true then
-    local chunk = ngx.arg[1]
-    local runscope_data = ngx.ctx.runscope or {res_body = ""} -- minimize the number of calls to ngx.ctx while fallbacking on default value
-    runscope_data.res_body = runscope_data.res_body..chunk
-    ngx.ctx.runscope = runscope_data
-  end
+
+ local chunk = ngx.arg[1]
+ local runscope_data = ngx.ctx.runscope or {res_body = ""} -- minimize the number of calls to ngx.ctx while fallbacking on default value
+ runscope_data.res_body = runscope_data.res_body..chunk
+ ngx.ctx.runscope = runscope_data
+
 end
 
 function TCPBodyLogHandler:log(conf)
   TCPBodyLogHandler.super.log(self)
-  
+
   -- Call serializer (using runscope's serializer initialized above)
   local message = tcp_body_log_serializer.serialize(ngx)
   -- Call execute method of 'log' initialized earlier
